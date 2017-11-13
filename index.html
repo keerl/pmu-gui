@@ -57,11 +57,11 @@
     var editNodeId = null;
 
     var nodesArray = [
-                  [1,2],
-                  [3,4],
+                  [1],
+                  [3],
                   [0,5],
-                  [4,0,2],
-                  [1,2,3]
+                  [2],
+                  [3]
                 ];
 
     function updateNodeList() {
@@ -90,21 +90,31 @@
     $("#addNode").click(function(){
       nodesArray.push([]);
       nodes.add({
-          id: nodesArray.length-1,
-          label: "Node " + (nodesArray.length-1).toString()
+          id: nodesArray.length,
+          label: "Node " + (nodesArray.length).toString(),
+          shape: 'box', 
+          color: {
+            background: "#67c482",
+            border: "#67c482",
+            highlight: {
+              background: '#57a5ff'
+            }
+          }
       });
       updateNodeList();
     });
 
-    $(document.body).on('dblclick', '.btn-group', function(){
+    $(document.body).on('click', '.btn-group', function(){
         editNodeId = $(this).find(".label").attr("id");
 
         $("#" + editNodeId).removeClass('btn-success');
         $("#" + editNodeId).addClass('btn-primary');
         updateNodeList();
 
-        network.selectNodes(nodesArray[editNodeId]);
+        network.selectNodes(editNodeId);
     });
+
+
 
     // create an array with nodes
     var nodes = new vis.DataSet([]);
@@ -125,17 +135,42 @@
      $.each( nodesArray, function( key, value ) {
       nodes.add({
           id: key,
-          label: "Node " + key
+          label: "Node " + key,
+          shape: 'box', 
+          color: {
+            background: "#67c482",
+            border: "#67c482",
+            highlight: {
+              background: '#57a5ff',
+              border: '#57a5ff'
+            }
+          }
       });
       $.each( value, function( i, node ) {
           edges.add({
               from: key,
-              to: node
+              to: node,
+              smooth: false,
+              color: {
+                color: "#000",
+                highlight: '#000',
+                hover: '#000'
+              }
           });
       });
     });
 
     updateNodeList();
+
+    network.on( 'click', function(properties) {
+        var ids = properties.nodes;
+        var clickedNodes = nodes.get(ids);
+        editNodeId = ids;
+
+        $("#" + editNodeId).removeClass('btn-success');
+        $("#" + editNodeId).addClass('btn-primary');
+        updateNodeList();
+    });
   });
 
   
