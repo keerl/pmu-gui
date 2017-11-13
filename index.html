@@ -1,0 +1,144 @@
+
+<!doctype html>
+<html>
+<head>
+  <title>Network | Basic usage</title>
+
+  <script type="text/javascript" src="node_modules/vis/dist/vis.js"></script>
+  <link href="node_modules/vis/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <style type="text/css">
+    #mynetwork {
+      height: 600px;
+    }
+
+    .btn-group, .btn-group-vertical {
+        width: 100%;
+        margin-bottom: 2px;
+    }
+
+    .noselect {
+      -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+         -khtml-user-select: none; /* Konqueror HTML */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+                user-select: none; /* Non-prefixed version, currently
+                                      supported by Chrome and Opera */
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="row">
+    <div class="col-3">
+      <br><br>
+      <h4>PMU Placement GUI</h4>
+      <a href="#" id="addNode" class="btn btn-primary btn-sm" role="button" aria-disabled="true">Add Node</a>
+      <br><br><h6 class="noselect">Nodes: </h6>
+      <div id="nodes">
+        
+      </div>
+    </div>
+    <div class="col">
+      <div id="mynetwork"></div>
+    </div>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+    var editNodeId = null;
+
+    var nodesArray = [
+                  [1,2],
+                  [3,4],
+                  [0,5],
+                  [4,0,2],
+                  [1,2,3]
+                ];
+
+    function updateNodeList() {
+      $("#nodes").html('');
+      $.each( nodesArray, function( key, value ) {
+        var newNode = '<div class="btn-group" role="group">';
+        newNode += '<a href="#" class="btn';
+        
+        if(editNodeId == key)
+        {
+          newNode += ' btn-primary';
+        }
+        else {
+          newNode += ' btn-success';
+        }
+        newNode += ' btn-sm disabled label" role="button" aria-disabled="true" id="' + key + '">' + key + '</a>';
+        $.each( value, function( i, node ) {
+          newNode += '<a href="#" class="btn btn-secondary btn-sm disabled" role="button" aria-disabled="true">' + node + '</a>';
+        });
+
+        newNode += '</div>';
+        $("#nodes").append(newNode);
+      });
+    }
+
+    $("#addNode").click(function(){
+      nodesArray.push([]);
+      nodes.add({
+          id: nodesArray.length-1,
+          label: "Node " + (nodesArray.length-1).toString()
+      });
+      updateNodeList();
+    });
+
+    $(document.body).on('dblclick', '.btn-group', function(){
+        editNodeId = $(this).find(".label").attr("id");
+
+        $("#" + editNodeId).removeClass('btn-success');
+        $("#" + editNodeId).addClass('btn-primary');
+        updateNodeList();
+
+        network.selectNodes(nodesArray[editNodeId]);
+    });
+
+    // create an array with nodes
+    var nodes = new vis.DataSet([]);
+
+    // create an array with edges
+    var edges = new vis.DataSet([]);
+
+   
+    // create a network
+    var container = document.getElementById('mynetwork');
+    var data = {
+      nodes: nodes,
+      edges: edges
+    };
+    var options = {};
+    var network = new vis.Network(container, data, options);
+
+     $.each( nodesArray, function( key, value ) {
+      nodes.add({
+          id: key,
+          label: "Node " + key
+      });
+      $.each( value, function( i, node ) {
+          edges.add({
+              from: key,
+              to: node
+          });
+      });
+    });
+
+    updateNodeList();
+  });
+
+  
+</script>
+</body>
+</html>
