@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
   <style type="text/css">
     #mynetwork {
-      height: 600px;
+      height: 100%;
     }
 
     .btn-group, .btn-group-vertical {
@@ -26,26 +26,96 @@
                 user-select: none; /* Non-prefixed version, currently
                                       supported by Chrome and Opera */
     }
+
+    #nodes {
+      overflow-y: scroll;
+    }
+
+    #wrapper {
+  padding-left: 250px;
+  transition: all 0.4s ease 0s;
+}
+
+#sidebar-wrapper {
+  margin-left: -250px;
+  left: 250px;
+  width: 300px;
+  background: #f3f3f3;
+  position: fixed;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: all 0.4s ease 0s;
+  padding: 20px;
+  border-right: 2px solid #e8e8e8;
+}
+
+#page-content-wrapper {
+  width: 100%;
+}
+
+.sidebar-nav {
+  position: absolute;
+  top: 0;
+  width: 250px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width:767px) {
+
+    #wrapper {
+      padding-left: 0;
+    }
+
+    #sidebar-wrapper {
+      left: 0;
+    }
+
+    #wrapper.active {
+      position: relative;
+      left: 250px;
+    }
+
+    #wrapper.active #sidebar-wrapper {
+      left: 250px;
+      width: 250px;
+      transition: all 0.4s ease 0s;
+    }
+
+}
+
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="row">
-    <div class="col-3">
-      <br><br>
-      <h4>PMU Placement GUI</h4>
-      <a href="#" id="addNode" class="btn btn-primary btn-sm" role="button" aria-disabled="true">Add Node</a>
-      <br><br><h6 class="noselect">Nodes: </h6>
-      <div id="nodes">
+<div id="wrapper">
+    <div id="sidebar-wrapper">
+        <div id="controls">
+          <h4>PMU Placement GUI</h4>
+          <a href="#" id="addNode" class="btn btn-primary btn-sm" role="button" aria-disabled="true">Add Node</a>
+          <br><br><h6 class="noselect">Nodes: </h6>
+        </div>
         
-      </div>
+        <div id="nodes">
+        
+        </div>
     </div>
-    <div class="col">
-      <div id="mynetwork"></div>
+    <div id="page-content-wrapper">
+        <div class="page-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="mynetwork"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
@@ -53,6 +123,12 @@
 <script type="text/javascript">
 
   $(document).ready(function() {
+
+
+    $(window).resize(function() {
+      $("#nodes").height(window.innerHeight-$("#controls").height()-50);
+    });
+    $("#nodes").height(window.innerHeight-$("#controls").height()-50);
 
     var selectedNode = null;
 
@@ -63,6 +139,22 @@
                   [2],
                   [3]
                 ];
+
+
+    var colors = { 
+          normal : {
+                      background: "#67c482",
+                      border: "#67c482",
+                      highlight: {
+                        background: '#57a5ff',
+                        border: '#57a5ff'
+                      }
+                    },
+          secondary : {
+                        background: "#ffd758",
+                        border: "#ffd758"
+                      },
+          };
 
     function updateNodeList() {
       $("#nodes").html('');
@@ -93,13 +185,7 @@
           id: nodesArray.length,
           label: "Node " + (nodesArray.length).toString(),
           shape: 'box', 
-          color: {
-            background: "#67c482",
-            border: "#67c482",
-            highlight: {
-              background: '#57a5ff'
-            }
-          }
+          color: colors.normal
       });
       updateNodeList();
     });
@@ -129,14 +215,8 @@
           id: key,
           label: "Node " + key,
           shape: 'box', 
-          color: {
-            background: "#67c482",
-            border: "#67c482",
-            highlight: {
-              background: '#57a5ff',
-              border: '#57a5ff'
-            }
-          }
+          color: colors.normal
+          
       });
       $.each( value, function( i, node ) {
           edges.add({
@@ -159,7 +239,7 @@
         network.unselectAll();
         $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
         $.each( nodesArray[selectedNode], function( i, node ) {
-          nodes.update({id: node, color: {background: "#67c482"}});
+          nodes.update({id: node, color: colors.normal});
           $("#" + node).removeClass('btn-warning');
           $("#" + node).addClass('btn-success');
         });
@@ -173,7 +253,7 @@
 
         
         $.each( nodesArray[selectedNode], function( i, node ) {
-          nodes.update({id: node, color: {background: "#ffd758" }});
+          nodes.update({id: node, color: colors.secondary});
           $("#" + node).removeClass('btn-success');
           $("#" + node).addClass('btn-warning');
         });
