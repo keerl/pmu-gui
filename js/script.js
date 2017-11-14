@@ -25,15 +25,23 @@ $(document).ready(function() {
                       background: "#67c482",
                       border: "#67c482",
                       highlight: {
-                        background: '#57a5ff',
-                        border: '#57a5ff'
+                        background: '#67c482',
+                        border: '#67c482'
                       }
                     },
           secondary : {
                         background: "#ffd758",
-                        border: "#ffd758"
+                        border: "#ffd758",
+                        highlight: {
+                          background: '#ffd758',
+                          border: '#ffd758'
+                        }
                       },
-          };
+          selected : {
+                      background: "#57a5ff",
+                      border: "#57a5ff"
+                      }
+        };
 
 
 
@@ -88,11 +96,7 @@ $(document).ready(function() {
       nodes: nodes,
       edges: edges
     };
-    var options = {
-      autoResize: true,
-      height: '100%',
-      width: '100%'
-    };
+    var options = {};
     var network = new vis.Network(container, data, options);
 
      $.each( nodesArray, function( key, value ) {
@@ -101,7 +105,8 @@ $(document).ready(function() {
           label: "Node " + key,
           shape: 'box', 
           color: colors.normal
-          
+
+              
       });
       $.each( value, function( i, node ) {
           edges.add({
@@ -120,12 +125,14 @@ $(document).ready(function() {
     updateNodeList();
 
     function selectNode(id) {
+
       if((mode == "edit") && (selectedNode != null)) {
         
 
-        if(selectedNode == id) {
+        if(selectedNode == id[0]) {
           // Clear previously selected stuff 
           network.unselectAll();
+          nodes.update({id: selectedNode, color: colors.normal});
           $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
           $.each( nodesArray[selectedNode], function( i, node ) {
             nodes.update({id: node, color: colors.normal});
@@ -134,10 +141,12 @@ $(document).ready(function() {
           });
           /////////////////////////////////////////////////////////////
           selectedNode = null;
+
         }
         else {
-          
-          console.log('sdfsdf');
+          if($.inArray(id[0], nodesArray[selectedNode]) > 0) {
+            nodes.update({id: id[0], color: colors.secondary});
+          }
         }
       }
       else if(mode == "edit") {
@@ -161,8 +170,8 @@ $(document).ready(function() {
           $("#" + node).removeClass('btn-success');
           $("#" + node).addClass('btn-warning');
         });
-
-        network.selectNodes(selectedNode);
+        nodes.update({id: selectedNode, color: colors.selected});
+        //network.selectNodes(selectedNode);
       }
       else {
 
@@ -171,6 +180,9 @@ $(document).ready(function() {
         }
         // Clear previously selected stuff 
         network.unselectAll();
+        if(selectedNode) {
+          nodes.update({id: selectedNode, color: colors.normal});
+        }
         $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
         $.each( nodesArray[selectedNode], function( i, node ) {
           nodes.update({id: node, color: colors.normal});
@@ -190,13 +202,14 @@ $(document).ready(function() {
           $("#" + node).addClass('btn-warning');
         });
 
-        network.selectNodes(selectedNode);
+        //network.selectNodes(selectedNode);
+        nodes.update({id: selectedNode, color: colors.selected});
       }
     }
 
     network.on('click', function(properties) {
-      if(properties.nodes) {
-        console.log(properties.nodes);
+      if(properties.nodes.length > 0) {
+        //console.log(properties.nodes);
         selectNode(properties.nodes);
       }
       
