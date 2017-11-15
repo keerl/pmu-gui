@@ -6,6 +6,7 @@ $(document).ready(function() {
     });
     $("#nodes").height(window.innerHeight-$("#controls").height()-50);
 
+    $("#addNode").hide();
 
     var mode = 'view';
 
@@ -311,6 +312,7 @@ $(document).ready(function() {
       $("#edit").removeClass('btn-success');
       $("#edit").addClass('btn-secondary');
       $("#status").html("&nbsp;");
+      $("#addNode").hide();
     });
 
     $("#edit").click(function(){
@@ -319,6 +321,7 @@ $(document).ready(function() {
       $("#view").addClass('btn-secondary');
       $("#edit").removeClass('btn-secondary');
       $("#edit").addClass('btn-success');
+      $("#addNode").show();
       if(selectedNode) {
         var tmp = selectedNode;
         selectedNode = null;
