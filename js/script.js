@@ -71,8 +71,8 @@ $(document).ready(function() {
     $("#addNode").click(function(){
       nodesArray.push([]);
       nodes.add({
-          id: nodesArray.length,
-          label: "Node " + (nodesArray.length).toString(),
+          id: nodesArray.length-1,
+          label: "Node " + (nodesArray.length-1).toString(),
           shape: 'box', 
           color: colors.normal
       });
@@ -126,10 +126,11 @@ $(document).ready(function() {
 
     function selectNode(id) {
 
+      id = parseInt(id);
       if((mode == "edit") && (selectedNode != null)) {
         
 
-        if(selectedNode == id[0]) {
+        if(selectedNode == id) {
           // Clear previously selected stuff 
           network.unselectAll();
           nodes.update({id: selectedNode, color: colors.normal});
@@ -144,8 +145,92 @@ $(document).ready(function() {
 
         }
         else {
-          if($.inArray(id[0], nodesArray[selectedNode]) > 0) {
-            nodes.update({id: id[0], color: colors.secondary});
+          if(($.inArray(id, nodesArray[selectedNode]) >= 0) || ($.inArray(selectedNode, nodesArray[id]) >= 0)) {
+
+            var tmpNode1 = network.getConnectedEdges(selectedNode);
+            var tmpNode2 = network.getConnectedEdges(id);
+
+            $.each( tmpNode1, function( i, node1 ) {
+              
+                $.each( tmpNode2, function( j, node2 ) {
+                  if(node1 == node2)
+                  {
+                    edges.remove({id:node1});
+                    edges.remove({id:node2});
+                  }
+                });
+              
+            });
+
+
+            nodesArray[selectedNode].splice($.inArray(id, nodesArray[selectedNode]), 1);
+            nodesArray[id].splice($.inArray(selectedNode, nodesArray[id]), 1);
+
+            nodes.update({id: id, color: colors.normal});
+            updateNodeList();
+
+            // CLEAR
+            $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+            $.each( nodesArray[selectedNode], function( i, node ) {
+              nodes.update({id: node, color: colors.normal});
+              $("#" + node).removeClass('btn-warning');
+              $("#" + node).addClass('btn-success');
+            });
+
+
+            $("#" + selectedNode).removeClass('btn-success');
+            $("#" + selectedNode).addClass('btn-primary');
+            
+            $.each( nodesArray[selectedNode], function( i, node ) {
+              nodes.update({id: node, color: colors.secondary});
+              $("#" + node).removeClass('btn-success');
+              $("#" + node).addClass('btn-warning');
+            });
+          }
+          else {
+            nodesArray[selectedNode].push(id);
+            nodesArray[id].push(selectedNode);
+            updateNodeList();
+            nodes.update({id: id, color: colors.secondary});
+            edges.add({
+                from: id,
+                to: selectedNode,
+                smooth: false,
+                color: {
+                  color: "#000",
+                  highlight: '#000',
+                  hover: '#000'
+                }
+            });
+
+            edges.add({
+                from: selectedNode,
+                to: id,
+                smooth: false,
+                color: {
+                  color: "#000",
+                  highlight: '#000',
+                  hover: '#000'
+                }
+            });
+
+            // CLEAR
+            $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+            $.each( nodesArray[selectedNode], function( i, node ) {
+              nodes.update({id: node, color: colors.normal});
+              $("#" + node).removeClass('btn-warning');
+              $("#" + node).addClass('btn-success');
+            });
+
+
+            $("#" + selectedNode).removeClass('btn-success');
+            $("#" + selectedNode).addClass('btn-primary');
+            
+            $.each( nodesArray[selectedNode], function( i, node ) {
+              nodes.update({id: node, color: colors.secondary});
+              $("#" + node).removeClass('btn-success');
+              $("#" + node).addClass('btn-warning');
+            });
           }
         }
       }
