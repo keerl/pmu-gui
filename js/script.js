@@ -29,6 +29,7 @@ $(document).ready(function() {
                         background: '#67c482',
                         border: '#67c482'
                       }
+
                     },
           secondary : {
                         background: "#ffd758",
@@ -104,7 +105,9 @@ $(document).ready(function() {
       nodes.add({
           id: key,
           label: "Node " + key,
-          shape: 'box', 
+          shape: 'box', /*
+          shape: 'image',
+          image: 'images/normal.jpg', */
           color: colors.normal
 
               
