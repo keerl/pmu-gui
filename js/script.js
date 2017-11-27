@@ -42,7 +42,11 @@ $(document).ready(function() {
           selected : {
                       background: "#57a5ff",
                       border: "#57a5ff"
-                      }
+                      },
+          pmu : {
+                      background: "tomato",
+                      border: "tomato"
+                      },            
         };
 
 
@@ -316,6 +320,7 @@ $(document).ready(function() {
       $("#edit").addClass('btn-secondary');
       $("#status").html("&nbsp;");
       $("#addNode").hide();
+      $("#analyze").show();
     });
 
     $("#edit").click(function(){
@@ -325,6 +330,7 @@ $(document).ready(function() {
       $("#edit").removeClass('btn-secondary');
       $("#edit").addClass('btn-success');
       $("#addNode").show();
+      $("#analyze").hide();
       if(selectedNode) {
         var tmp = selectedNode;
         selectedNode = null;
@@ -336,4 +342,82 @@ $(document).ready(function() {
       
     });
 
+    $("#analyze").click(function() {
+      $("#status").html("Results:");
+
+      var a = [];
+      var b = new Array(nodesArray.length).fill(1);
+      var c = new Array(nodesArray.length).fill(1);
+      var m = nodesArray.length;
+      var n = nodesArray.length;
+      var xLB = new Array(nodesArray.length).fill(0);
+      var xUB = new Array(nodesArray.length).fill(Infinity);
+      var xINT = new Array(nodesArray.length).fill(true);
+
+      $.each( nodesArray, function( i, node ) {
+        var tmpArray = new Array(nodesArray.length).fill(0);
+        $.each( nodesArray[i], function( j, node2 ) {
+          tmpArray[node2] = 1;
+        });
+        tmpArray[i] = 1;
+        a.push(tmpArray);
+        tmpArray = [];
+      });
+
+      var test = new Object();
+      test.A = a;
+      test.b = b;
+      test.c = c;
+      test.m = m;
+      test.n = n;
+      test.xLB = xLB;
+      test.xUB = xUB;
+      test.xINT = xINT;
+      SimplexJS.SolveMILP(test);
+      console.log(JSON.stringify(test.x), JSON.stringify(test.z));
+      $.each( test.x, function( i, node ) {
+        if(node) {
+          nodes.update({id: i, color: colors.pmu});
+        }
+          
+        
+      });
+    });
+
+    function TestPrimalSimplex() {
+        var test = new Object();
+        test.A = [[ 2, 1, 1, 0],
+                  [20, 1, 0, 1]];
+        test.b = [40, 100];
+        test.c = [-10, -1, 0, 0];
+        test.m = 2;
+        test.n = 4;
+        test.xLB = [2, 0, 0, 0];
+        test.xUB = [3, Infinity, Infinity, Infinity];
+        SimplexJS.PrimalSimplex(test);
+      console.log(test.x, test.z);
+        // Should be 3, 34, 0, 6
+    }
+
+    function TestBandB() {
+        var test = new Object();
+        test.A = [[ 1, 1, 0, 1, 0, 0],
+                  [ 0, 1, 1, 0, 1, 0],
+                  [.5,.5, 1, 1, 0, 1]];
+        test.b =  [ 1, 1, 1];
+        test.c =  [-1,-1,-1, 0, 0, 0];
+        test.m = 3;
+        test.n = 6;
+        test.xLB = [0, 0, 0, 0, 0, 0];
+        test.xUB = [Infinity, Infinity, Infinity, Infinity, Infinity, Infinity];
+      test.xINT = [true, true, true, false, false, false];
+        SimplexJS.SolveMILP(test);
+      console.log(JSON.stringify(test.x) + "  " + JSON.stringify(test.z));
+        // Should be 1, 0, 0, 0, 1, 0.5, z=-1
+      //        or 0, 1, 0, 0, 0, 0.5, z=-1
+    }
+    // console.log("Testing Branch and Bound");
+    // TestBandB();
+    // console.log(" Should be 1, 0, 0, 0, 1, 0.5, z=-1");
+    // console.log("        or 0, 1, 0, 0, 0, 0.5, z=-1");
   });
