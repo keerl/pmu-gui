@@ -147,7 +147,7 @@ var SimplexJS = {
 			log.push("All nodes solved or fathomed - NO integer solution found");
 			rootModel.status = SimplexJS.INFEASIBLE;
 		}
-	
+		console.log(log);
 	},
 
 	//---------------------------------------------------------------

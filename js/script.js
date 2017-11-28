@@ -1,6 +1,10 @@
 $(document).ready(function() {
 
 
+
+    
+
+
     $(window).resize(function() {
       $("#nodes").height(window.innerHeight-$("#controls").height()-50);
     });
@@ -342,46 +346,99 @@ $(document).ready(function() {
       
     });
 
+    var pmuLocations = [];
+
+    function genObjective(length) {
+      var tmpString = '';
+      for(var i=0; i<length; i++) {
+        tmpString += 'x' + i;
+        if(i != length-1) {
+          tmpString += ' + ';
+        }
+      }
+      return tmpString;
+    }
+
+    function genConstraints() {
+      var tmpArray = [];
+      var tmpString = '';
+
+      $.each( nodesArray, function( i, node ) {
+
+        $.each( nodesArray[i], function( j, node2 ) {
+          tmpString += 'x' + node2 + ' + ';
+        });
+        tmpString += 'x' + i;
+        tmpString += ' >= 1';
+        tmpArray.push(tmpString);
+
+        tmpString = '';
+      });
+
+      return tmpArray;
+    }
+
     $("#analyze").click(function() {
       $("#status").html("Results:");
 
-      var a = [];
-      var b = new Array(nodesArray.length).fill(1);
-      var c = new Array(nodesArray.length).fill(1);
-      var m = nodesArray.length;
-      var n = nodesArray.length;
-      var xLB = new Array(nodesArray.length).fill(0);
-      var xUB = new Array(nodesArray.length).fill(Infinity);
-      var xINT = new Array(nodesArray.length).fill(true);
-
-      $.each( nodesArray, function( i, node ) {
-        var tmpArray = new Array(nodesArray.length).fill(0);
-        $.each( nodesArray[i], function( j, node2 ) {
-          tmpArray[node2] = 1;
-        });
-        tmpArray[i] = 1;
-        a.push(tmpArray);
-        tmpArray = [];
-      });
-
-      var test = new Object();
-      test.A = a;
-      test.b = b;
-      test.c = c;
-      test.m = m;
-      test.n = n;
-      test.xLB = xLB;
-      test.xUB = xUB;
-      test.xINT = xINT;
-      SimplexJS.SolveMILP(test);
-      console.log(JSON.stringify(test.x), JSON.stringify(test.z));
-      $.each( test.x, function( i, node ) {
+      $.each( pmuLocations, function( i, node ) {
         if(node) {
-          nodes.update({id: i, color: colors.pmu});
+          nodes.update({id: i, color: colors.normal});
+          console.log(i + "  " + node);
         }
-          
-        
       });
+
+      //console.log(genConstraints());
+
+      console.log(genObjective(nodesArray.length));
+      console.log(genConstraints());
+
+      var input = {
+        type: "minimize",
+        objective : genObjective(nodesArray.length),
+        constraints : genConstraints()
+      };
+      var output = YASMIJ.solve( input );
+      console.log(output);
+
+
+      // var a = [];
+      // var b = new Array(nodesArray.length).fill(1);
+      // var c = new Array(nodesArray.length).fill(1);
+      // var m = nodesArray.length;
+      // var n = nodesArray.length;
+      // var xLB = new Array(nodesArray.length).fill(0);
+      // var xUB = new Array(nodesArray.length).fill(Infinity);
+      // var xINT = new Array(nodesArray.length).fill(true);
+
+      // $.each( nodesArray, function( i, node ) {
+      //   var tmpArray = new Array(nodesArray.length).fill(0);
+      //   $.each( nodesArray[i], function( j, node2 ) {
+      //     tmpArray[node2] = 1;
+      //   });
+      //   tmpArray[i] = 1;
+      //   a.push(tmpArray);
+      //   tmpArray = [];
+      // });
+      // //console.log(JSON.stringify(a), nodesArray.length);
+      // var test = new Object();
+      // test.A = a;
+      // test.b = b;
+      // test.c = c;
+      // test.m = m;
+      // test.n = n;
+      // test.xLB = xLB;
+      // test.xUB = xUB;
+      // test.xINT = xINT;
+      // SimplexJS.SolveMILP(test);
+      // //console.log(test);
+      // pmuLocations = test.x;
+      // $("#status").html(JSON.stringify(test.x) + " " + JSON.stringify(test.z));
+      // $.each( test.x, function( i, node ) {
+      //   if(node) {
+      //     nodes.update({id: i, color: colors.pmu});
+      //   }
+      // });
     });
 
     function TestPrimalSimplex() {
@@ -416,7 +473,8 @@ $(document).ready(function() {
         // Should be 1, 0, 0, 0, 1, 0.5, z=-1
       //        or 0, 1, 0, 0, 0, 0.5, z=-1
     }
-    // console.log("Testing Branch and Bound");
+
+    
     // TestBandB();
     // console.log(" Should be 1, 0, 0, 0, 1, 0.5, z=-1");
     // console.log("        or 0, 1, 0, 0, 0, 0.5, z=-1");

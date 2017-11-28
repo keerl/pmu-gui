@@ -26,7 +26,7 @@ function TestBandB() {
     test.xLB = [0, 0, 0, 0, 0, 0];
     test.xUB = [Infinity, Infinity, Infinity, Infinity, Infinity, Infinity];
 	test.xINT = [true, true, true, false, false, false];
-    SimplexJS.SolveMILP(test);
+    SimplexJS.PrimalSimplex(test);
 	console.log(test.x, test.z);
     // Should be 1, 0, 0, 0, 1, 0.5, z=-1
 	//        or 0, 1, 0, 0, 0, 0.5, z=-1
