@@ -5,6 +5,17 @@ $(document).ready(function() {
     });
     $("#nodes").height(window.innerHeight-$("#controls").height()-50);
 
+    window.addEventListener('resize', resizeCanvas, false);
+    function resizeCanvas() {
+        //$("#mynetwork").width = window.innerWidth;
+        console.log(window.innerHeight);
+        $("#mynetwork").find("canvas").attr('height', window.innerHeight);
+        $("#mynetwork").find("canvas").attr('width', window.innerWidth-250);
+        network.redraw();
+        network.fit();
+    }
+    
+
     $("#addNode").hide();
 
     var mode = 'view';
@@ -106,7 +117,7 @@ $(document).ready(function() {
       edges: edges
     };
     var options = {
-      autoResize: true,
+      autoResize: false,
       height: '100%',
       width: '100%',
       physics: {
@@ -146,7 +157,7 @@ $(document).ready(function() {
     });
 
     updateNodeList();
-
+    resizeCanvas();
     function selectNode(id) {
       clearPmuLocations();
       id = parseInt(id);
