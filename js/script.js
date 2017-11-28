@@ -82,8 +82,10 @@ $(document).ready(function() {
       nodesArray.push([]);
       nodes.add({
           id: nodesArray.length-1,
-          label: "Node " + (nodesArray.length-1).toString(),
-          shape: 'box', 
+          label: " " + (nodesArray.length-1).toString(),
+          font:{size:15, color: '#ffffff'},
+          size:40,
+          shape: 'circle', 
           color: colors.normal
       });
       updateNodeList();
@@ -106,14 +108,23 @@ $(document).ready(function() {
       nodes: nodes,
       edges: edges
     };
-    var options = {};
+    var options = {
+      physics: {
+        barnesHut: {
+          gravitationalConstant: -5000,
+          centralGravity: 0.2
+        }
+      }
+    };
     var network = new vis.Network(container, data, options);
 
      $.each( nodesArray, function( key, value ) {
       nodes.add({
           id: key,
-          label: "Node " + key,
-          shape: 'box', /*
+          label: ' ' + key.toString(),
+          font:{size:15, color: '#ffffff'},
+          size:40,
+          shape: 'circle', /*
           shape: 'image',
           image: 'images/normal.jpg', */
           color: colors.normal
@@ -346,7 +357,7 @@ $(document).ready(function() {
       
     });
 
-    var pmuLocations = [];
+    var pmuLocations = [2,3];
 
     function genObjective(length) {
       var tmpString = '';
@@ -378,28 +389,99 @@ $(document).ready(function() {
       return tmpArray;
     }
 
+    function genBounds(length) {
+      var tmpString = '';
+      for(var i=0; i<length; i++) {
+        tmpString += 'x' + i + ' <= 1\n';
+      }
+      return tmpString;
+    }
+
+    function genDef(length) {
+      var tmpString = '';
+      for(var i=0; i<length; i++) {
+        tmpString += 'x' + i + '\n';
+      }
+      return tmpString;
+    }
+
+    function compile(objective, constraints, bounds, definitions) {
+        var tmpString = 'Minimize\n';
+        tmpString += 'obj: ';
+        tmpString += objective + '\n';
+        tmpString += '\n';
+        tmpString += 'Subject To\n';
+        $.each( constraints, function( i, constraint ) {
+          tmpString += 'lim_' + i + ':';
+          tmpString += constraint + '\n';
+        });
+        tmpString += '\n';
+        tmpString += 'Bounds\n';
+        tmpString += bounds;
+        tmpString += '\n';
+
+        tmpString += 'General\n';
+        tmpString += definitions;
+        tmpString += '\n';
+        tmpString += 'End';
+
+        return tmpString;
+    }
+
     $("#analyze").click(function() {
-      $("#status").html("Results:");
+      
 
       $.each( pmuLocations, function( i, node ) {
-        if(node) {
-          nodes.update({id: i, color: colors.normal});
-          console.log(i + "  " + node);
-        }
+        
+          nodes.update({id: node, color: colors.normal});
       });
-
+      pmuLocations = [];
       //console.log(genConstraints());
 
-      console.log(genObjective(nodesArray.length));
-      console.log(genConstraints());
+      //console.log(genObjective(nodesArray.length));
+      //console.log(genConstraints());
+      //console.log(genBounds(nodesArray.length));
+      //console.log(genDef(nodesArray.length));
+
+      //console.log(compile(genObjective(nodesArray.length), genConstraints(), genBounds(nodesArray.length), genDef(nodesArray.length)));
+
+      var start = new Date(); 
+      var lp = glp_create_prob();
+      glp_read_lp_from_string(lp, null, compile(genObjective(nodesArray.length), genConstraints(), genBounds(nodesArray.length), genDef(nodesArray.length)));
+
+      glp_scale_prob(lp, GLP_SF_AUTO);
+
+      var smcp = new SMCP({presolve: GLP_ON});
+      glp_simplex(lp, smcp);
+
+      var iocp = new IOCP({presolve: GLP_ON});
+      glp_intopt(lp, iocp);
+
+      console.log("obj: " + glp_mip_obj_val(lp));
+      for(var i = 1; i <= glp_get_num_cols(lp); i++){
+          console.log(glp_get_col_name(lp, i).substr(1)  + " = " + glp_mip_col_val(lp, i));
+          if(glp_mip_col_val(lp, i)) {
+            pmuLocations.push(parseInt(glp_get_col_name(lp, i).substr(1)));
+            nodes.update({id: parseInt(glp_get_col_name(lp, i).substr(1)), color: colors.pmu});
+
+          }
+      }
+        
+
 
       var input = {
         type: "minimize",
-        objective : genObjective(nodesArray.length),
-        constraints : genConstraints()
+        objective : "x1 + x2 + x3 + x4 + x5",
+        constraints : [
+              "x1 + x2 + x3 >= 1",
+              "x1 + x2 + x3 >= 1",
+              "x1 + x2 + x3 + x4 >= 1",
+              "x2 + x4 + x5 >= 1",
+              "x4 + x5 >= 1"
+        ]
       };
       var output = YASMIJ.solve( input );
-      console.log(output);
+      //console.log(output);
 
 
       // var a = [];
