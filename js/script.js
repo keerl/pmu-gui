@@ -1,10 +1,5 @@
 $(document).ready(function() {
 
-
-
-    
-
-
     $(window).resize(function() {
       $("#nodes").height(window.innerHeight-$("#controls").height()-50);
     });
@@ -53,6 +48,8 @@ $(document).ready(function() {
                       },            
         };
 
+
+    $('#equationsWindow').modal({ show: false});
 
 
     function updateNodeList() {
@@ -109,10 +106,13 @@ $(document).ready(function() {
       edges: edges
     };
     var options = {
+      autoResize: true,
+      height: '100%',
+      width: '100%',
       physics: {
         barnesHut: {
-          gravitationalConstant: -5000,
-          centralGravity: 0.2
+          //gravitationalConstant: -5000,
+          //centralGravity: 0.2
         }
       }
     };
@@ -148,7 +148,7 @@ $(document).ready(function() {
     updateNodeList();
 
     function selectNode(id) {
-
+      clearPmuLocations();
       id = parseInt(id);
       if((mode == "edit") && (selectedNode != null)) {
         
@@ -335,7 +335,7 @@ $(document).ready(function() {
       $("#edit").addClass('btn-secondary');
       $("#status").html("&nbsp;");
       $("#addNode").hide();
-      $("#analyze").show();
+      $(".optimize").show();
     });
 
     $("#edit").click(function(){
@@ -345,7 +345,8 @@ $(document).ready(function() {
       $("#edit").removeClass('btn-secondary');
       $("#edit").addClass('btn-success');
       $("#addNode").show();
-      $("#analyze").hide();
+      $(".optimize").hide();
+      clearPmuLocations();
       if(selectedNode) {
         var tmp = selectedNode;
         selectedNode = null;
@@ -357,7 +358,7 @@ $(document).ready(function() {
       
     });
 
-    var pmuLocations = [2,3];
+    var pmuLocations = [];
 
     function genObjective(length) {
       var tmpString = '';
@@ -428,22 +429,42 @@ $(document).ready(function() {
         return tmpString;
     }
 
-    $("#analyze").click(function() {
-      
-
+    function clearPmuLocations() {
       $.each( pmuLocations, function( i, node ) {
-        
           nodes.update({id: node, color: colors.normal});
+          $("#" + node).removeClass('btn-danger');
+          console.log("removing: " + "#" + node);
       });
+      
       pmuLocations = [];
-      //console.log(genConstraints());
+    }
 
-      //console.log(genObjective(nodesArray.length));
-      //console.log(genConstraints());
-      //console.log(genBounds(nodesArray.length));
-      //console.log(genDef(nodesArray.length));
+    $("#constraints").click(function() {
+      $('#equationsWindow').modal('show');
+      $("#constraintsBody").html('');
+      $.each( genConstraints(), function( i, constraint ) {
+        $("#constraintsBody").append('`' + constraint + "`<br>");
+      });
+      var math = document.getElementById("constraintsBody");
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
+    });
 
-      //console.log(compile(genObjective(nodesArray.length), genConstraints(), genBounds(nodesArray.length), genDef(nodesArray.length)));
+    $("#optimize").click(function() {
+
+      // Clear previously selected stuff 
+      network.unselectAll();
+      if(selectedNode) {
+        nodes.update({id: selectedNode, color: colors.normal});
+        $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+        $.each( nodesArray[selectedNode], function( i, node ) {
+          nodes.update({id: node, color: colors.normal});
+          $("#" + node).removeClass('btn-warning');
+          $("#" + node).addClass('btn-success');
+        });
+      }
+      
+      clearPmuLocations();
+      
 
       var start = new Date(); 
       var lp = glp_create_prob();
@@ -463,101 +484,8 @@ $(document).ready(function() {
           if(glp_mip_col_val(lp, i)) {
             pmuLocations.push(parseInt(glp_get_col_name(lp, i).substr(1)));
             nodes.update({id: parseInt(glp_get_col_name(lp, i).substr(1)), color: colors.pmu});
-
+            $("#" + parseInt(glp_get_col_name(lp, i).substr(1))).addClass('btn-danger');
           }
       }
-        
-
-
-      var input = {
-        type: "minimize",
-        objective : "x1 + x2 + x3 + x4 + x5",
-        constraints : [
-              "x1 + x2 + x3 >= 1",
-              "x1 + x2 + x3 >= 1",
-              "x1 + x2 + x3 + x4 >= 1",
-              "x2 + x4 + x5 >= 1",
-              "x4 + x5 >= 1"
-        ]
-      };
-      var output = YASMIJ.solve( input );
-      //console.log(output);
-
-
-      // var a = [];
-      // var b = new Array(nodesArray.length).fill(1);
-      // var c = new Array(nodesArray.length).fill(1);
-      // var m = nodesArray.length;
-      // var n = nodesArray.length;
-      // var xLB = new Array(nodesArray.length).fill(0);
-      // var xUB = new Array(nodesArray.length).fill(Infinity);
-      // var xINT = new Array(nodesArray.length).fill(true);
-
-      // $.each( nodesArray, function( i, node ) {
-      //   var tmpArray = new Array(nodesArray.length).fill(0);
-      //   $.each( nodesArray[i], function( j, node2 ) {
-      //     tmpArray[node2] = 1;
-      //   });
-      //   tmpArray[i] = 1;
-      //   a.push(tmpArray);
-      //   tmpArray = [];
-      // });
-      // //console.log(JSON.stringify(a), nodesArray.length);
-      // var test = new Object();
-      // test.A = a;
-      // test.b = b;
-      // test.c = c;
-      // test.m = m;
-      // test.n = n;
-      // test.xLB = xLB;
-      // test.xUB = xUB;
-      // test.xINT = xINT;
-      // SimplexJS.SolveMILP(test);
-      // //console.log(test);
-      // pmuLocations = test.x;
-      // $("#status").html(JSON.stringify(test.x) + " " + JSON.stringify(test.z));
-      // $.each( test.x, function( i, node ) {
-      //   if(node) {
-      //     nodes.update({id: i, color: colors.pmu});
-      //   }
-      // });
     });
-
-    function TestPrimalSimplex() {
-        var test = new Object();
-        test.A = [[ 2, 1, 1, 0],
-                  [20, 1, 0, 1]];
-        test.b = [40, 100];
-        test.c = [-10, -1, 0, 0];
-        test.m = 2;
-        test.n = 4;
-        test.xLB = [2, 0, 0, 0];
-        test.xUB = [3, Infinity, Infinity, Infinity];
-        SimplexJS.PrimalSimplex(test);
-      console.log(test.x, test.z);
-        // Should be 3, 34, 0, 6
-    }
-
-    function TestBandB() {
-        var test = new Object();
-        test.A = [[ 1, 1, 0, 1, 0, 0],
-                  [ 0, 1, 1, 0, 1, 0],
-                  [.5,.5, 1, 1, 0, 1]];
-        test.b =  [ 1, 1, 1];
-        test.c =  [-1,-1,-1, 0, 0, 0];
-        test.m = 3;
-        test.n = 6;
-        test.xLB = [0, 0, 0, 0, 0, 0];
-        test.xUB = [Infinity, Infinity, Infinity, Infinity, Infinity, Infinity];
-      test.xINT = [true, true, true, false, false, false];
-        SimplexJS.SolveMILP(test);
-      console.log(JSON.stringify(test.x) + "  " + JSON.stringify(test.z));
-        // Should be 1, 0, 0, 0, 1, 0.5, z=-1
-      //        or 0, 1, 0, 0, 0, 0.5, z=-1
-    }
-
-    
-    // TestBandB();
-    // console.log(" Should be 1, 0, 0, 0, 1, 0.5, z=-1");
-    // console.log("        or 0, 1, 0, 0, 0, 0.5, z=-1");
   });
