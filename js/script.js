@@ -7,8 +7,6 @@ $(document).ready(function() {
 
     window.addEventListener('resize', resizeCanvas, false);
     function resizeCanvas() {
-        //$("#mynetwork").width = window.innerWidth;
-        console.log(window.innerHeight);
         $("#mynetwork").find("canvas").attr('height', window.innerHeight-25);
         $("#mynetwork").find("canvas").attr('width', window.innerWidth-250);
         network.redraw();
@@ -17,18 +15,13 @@ $(document).ready(function() {
     
 
     $("#addNode").hide();
+    $("#import").hide();
 
     var mode = 'view';
 
     var selectedNode = null;
 
-    var nodesArray = [
-                  [1,2],
-                  [3,2,0],
-                  [0,1],
-                  [1,4],
-                  [3]
-                ];
+    var nodesArray = [[1,2],[0,3,4,5],[0,3],[2,5,11],[1,6],[3,7,8,9,27],[4,5],[5,27],[5,9,10],[8,16,19,20,21],[8],[3,12,13,14,15],[11],[11,14],[11,13,17,22],[11,16],[9,15],[14,18],[17,19],[9,18],[9,21],[9,20,23],[14,23],[21,22,24],[23,25,26],[24],[24,27,28,29],[5,7,26],[26,29],[26,28]];
 
 
     var colors = { 
@@ -121,43 +114,50 @@ $(document).ready(function() {
       height: '100%',
       width: '100%',
       physics: {
-        barnesHut: {
-          //gravitationalConstant: -5000,
-          //centralGravity: 0.2
-        }
+        forceAtlas2Based: {
+          avoidOverlap: 1,
+          springLength: 45,
+          damping: 0.2,
+          centralGravity: 0.02
+        },
+        solver: 'forceAtlas2Based'
       }
     };
     var network = new vis.Network(container, data, options);
 
-     $.each( nodesArray, function( key, value ) {
-      nodes.add({
-          id: key,
-          label: ' ' + key.toString(),
-          font:{size:15, color: '#ffffff'},
-          size:40,
-          shape: 'circle', /*
-          shape: 'image',
-          image: 'images/normal.jpg', */
-          color: colors.normal
+    function generateData() {
+      $.each( nodesArray, function( key, value ) {
+        nodes.add({
+            id: key,
+            label: ' ' + key.toString(),
+            font:{size:15, color: '#ffffff'},
+            size:40,
+            shape: 'circle', /*
+            shape: 'image',
+            image: 'images/normal.jpg', */
+            color: colors.normal
 
-              
+                
+        });
+        $.each( value, function( i, node ) {
+            edges.add({
+                from: key,
+                to: node,
+                smooth: false,
+                color: {
+                  color: "#000",
+                  highlight: '#000',
+                  hover: '#000'
+                }
+            });
+        });
       });
-      $.each( value, function( i, node ) {
-          edges.add({
-              from: key,
-              to: node,
-              smooth: false,
-              color: {
-                color: "#000",
-                highlight: '#000',
-                hover: '#000'
-              }
-          });
-      });
-    });
-
+    }
+     
+    generateData();
     updateNodeList();
     resizeCanvas();
+
     function selectNode(id) {
       clearPmuLocations();
       id = parseInt(id);
@@ -334,6 +334,26 @@ $(document).ready(function() {
       
     });
 
+    $('html').keyup(function(e){
+      if(selectedNode && (mode == "edit")) {
+        if(e.keyCode == 46) {
+            $.each( nodesArray, function( i, nodeRow ) {
+
+              nodesArray[i] = $.grep(nodesArray[i], function(value) {
+                                return value != selectedNode;
+                              });
+            });
+            nodes.remove({id: selectedNode});
+            nodesArray.splice(selectedNode, 1); 
+            nodes.clear();
+            generateData();
+            updateNodeList();
+        }
+      }
+    });
+
+
+
     $(document.body).on('click', '.nodeRow', function() {
         selectNode($(this).find(".label").attr("id"));
     });
@@ -347,6 +367,7 @@ $(document).ready(function() {
       $("#status").html("&nbsp;");
       $("#addNode").hide();
       $(".optimize").show();
+      $("#import").hide();
     });
 
     $("#edit").click(function(){
@@ -357,6 +378,7 @@ $(document).ready(function() {
       $("#edit").addClass('btn-success');
       $("#addNode").show();
       $(".optimize").hide();
+      $("#import").show();
       clearPmuLocations();
       if(selectedNode) {
         var tmp = selectedNode;
@@ -461,7 +483,7 @@ $(document).ready(function() {
     });
 
     $("#optimize").click(function() {
-
+      console.log(JSON.stringify(nodesArray));
       // Clear previously selected stuff 
       network.unselectAll();
       if(selectedNode) {
@@ -498,5 +520,36 @@ $(document).ready(function() {
             $("#" + parseInt(glp_get_col_name(lp, i).substr(1))).addClass('btn-danger');
           }
       }
+    });
+
+    $("#import").click(function() {
+      $('#importWindow').modal('show');
+    });
+
+    $("#importBtn").click(function() {
+      var importData = JSON.parse($('#importData').val());
+      var tmpData = [];
+
+      $.each( importData, function( i, node ) {
+        tmpData[i] = [];
+        $.each( importData[i], function( j, node2 ) {
+          if(node2) {
+            if(i != j) {
+              tmpData[i].push(j);
+            }
+          }
+          
+        });
+      });
+
+
+      nodesArray = tmpData;
+
+      nodes.clear();
+      generateData();
+      updateNodeList();
+      resizeCanvas();
+
+      $('#importWindow').modal('hide');
     });
   });
