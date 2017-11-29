@@ -9,7 +9,7 @@ $(document).ready(function() {
     function resizeCanvas() {
         //$("#mynetwork").width = window.innerWidth;
         console.log(window.innerHeight);
-        $("#mynetwork").find("canvas").attr('height', window.innerHeight);
+        $("#mynetwork").find("canvas").attr('height', window.innerHeight-25);
         $("#mynetwork").find("canvas").attr('width', window.innerWidth-250);
         network.redraw();
         network.fit();
