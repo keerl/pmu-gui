@@ -115,12 +115,20 @@ $(document).ready(function() {
       width: '100%',
       physics: {
         forceAtlas2Based: {
-          avoidOverlap: 1,
-          springLength: 45,
+          avoidOverlap: 0,
+          springLength: 50,
           damping: 0.2,
-          centralGravity: 0.02
+          centralGravity: 0.02,
+          springConstant:0.04
         },
-        solver: 'forceAtlas2Based'
+        repulsion: {
+          avoidOverlap: 0.5,
+          springLength: 50,
+          damping: 0.2,
+          centralGravity: 0.02,
+          springConstant:0.04
+        },
+        solver: 'repulsion'
       }
     };
     var network = new vis.Network(container, data, options);
@@ -334,23 +342,23 @@ $(document).ready(function() {
       
     });
 
-    $('html').keyup(function(e){
-      if(selectedNode && (mode == "edit")) {
-        if(e.keyCode == 46) {
-            $.each( nodesArray, function( i, nodeRow ) {
+    // $('html').keyup(function(e){
+    //   if(selectedNode && (mode == "edit")) {
+    //     if(e.keyCode == 46) {
+    //         $.each( nodesArray, function( i, nodeRow ) {
 
-              nodesArray[i] = $.grep(nodesArray[i], function(value) {
-                                return value != selectedNode;
-                              });
-            });
-            nodes.remove({id: selectedNode});
-            nodesArray.splice(selectedNode, 1); 
-            nodes.clear();
-            generateData();
-            updateNodeList();
-        }
-      }
-    });
+    //           nodesArray[i] = $.grep(nodesArray[i], function(value) {
+    //                             return value != selectedNode;
+    //                           });
+    //         });
+    //         nodes.remove({id: selectedNode});
+    //         nodesArray.splice(selectedNode, 1); 
+    //         nodes.clear();
+    //         generateData();
+    //         updateNodeList();
+    //     }
+    //   }
+    // });
 
 
 
