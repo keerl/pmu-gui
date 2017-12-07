@@ -21,6 +21,15 @@ $(document).ready(function() {
 
     var selectedNode = null;
 
+    var networks = {
+                      "14" : {
+                          nodes: [[1,4],[0,2,3,4],[1],[1,2,4,6,8],[0,1],[3,10,11,12],[7,8],[3,6],[6,9,13],[3,8,10],[5,9],[5,12],[5,11,13],[8,12]]
+                      },
+                      "30" : {
+                          nodes: [[1,2],[0,3,4,5],[0,3],[2,5,11],[1,6],[3,7,8,9,27],[4,5],[5,27],[5,9,10],[8,16,19,20,21],[8],[3,12,13,14,15],[11],[11,14],[11,13,17,22],[11,16],[9,15],[14,18],[17,19],[9,18],[9,21],[9,20,23],[14,23],[21,22,24],[23,25,26],[24],[24,27,28,29],[5,7,26],[26,29],[26,28]]
+                      }
+                   };
+
     var nodesArray = [[1,2],[0,3,4,5],[0,3],[2,5,11],[1,6],[3,7,8,9,27],[4,5],[5,27],[5,9,10],[8,16,19,20,21],[8],[3,12,13,14,15],[11],[11,14],[11,13,17,22],[11,16],[9,15],[14,18],[17,19],[9,18],[9,21],[9,20,23],[14,23],[21,22,24],[23,25,26],[24],[24,27,28,29],[5,7,26],[26,29],[26,28]];
 
 
@@ -115,14 +124,12 @@ $(document).ready(function() {
       width: '100%',
       physics: {
         forceAtlas2Based: {
-          avoidOverlap: 0,
           springLength: 50,
           damping: 0.2,
           centralGravity: 0.02,
           springConstant:0.04
         },
         repulsion: {
-          avoidOverlap: 0.5,
           springLength: 50,
           damping: 0.2,
           centralGravity: 0.02,
@@ -165,6 +172,22 @@ $(document).ready(function() {
     generateData();
     updateNodeList();
     resizeCanvas();
+
+
+    $("#pickNetwork").change(function() {
+
+      nodesArray = networks[$("#pickNetwork").val()].nodes;
+
+      selectedNode = null;
+      pmuLocations = null;
+
+      $("#status").hide();
+
+      nodes.clear();
+      generateData();
+      updateNodeList();
+      resizeCanvas();
+    });
 
     function selectNode(id) {
       clearPmuLocations();
@@ -530,9 +553,11 @@ $(document).ready(function() {
       }
 
       var SORI = 0;
+      var ORC = 0;
 
       $.each( nodesArray, function( i, node ) {
         $.each( nodesArray[i], function( j, pmu ) {
+          ORC++;
           if($.inArray(nodesArray[i][j], pmuLocations) !== -1) {
             console.log(nodesArray[i][j])
             SORI++;
@@ -542,8 +567,12 @@ $(document).ready(function() {
           SORI = SORI + 2;
         }
       });
-
+      ORC /= nodesArray.length;
+      console.log(ORC);
       $("#status").html("<b>SORI: </b>" + SORI);
+      $("#status").show();
+      $("#nodes").height(window.innerHeight-$("#controls").height()-50);
+      //$("#status").append("<br><b>ORC: </b>" + ORC);
     });
 
     $("#import").click(function() {
