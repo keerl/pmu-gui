@@ -528,6 +528,22 @@ $(document).ready(function() {
             $("#" + parseInt(glp_get_col_name(lp, i).substr(1))).addClass('btn-danger');
           }
       }
+
+      var SORI = 0;
+
+      $.each( nodesArray, function( i, node ) {
+        $.each( nodesArray[i], function( j, pmu ) {
+          if($.inArray(nodesArray[i][j], pmuLocations) !== -1) {
+            console.log(nodesArray[i][j])
+            SORI++;
+          }
+        });
+        if($.inArray(i, pmuLocations) !== -1) {
+          SORI = SORI + 2;
+        }
+      });
+
+      $("#status").html("<b>SORI: </b>" + SORI);
     });
 
     $("#import").click(function() {
