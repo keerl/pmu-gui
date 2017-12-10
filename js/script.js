@@ -41,7 +41,7 @@ $(document).ready(function() {
                     }
                  };
 
-  var nodesArray = networks["57"].nodes;
+  var nodesArray = networks["30"].nodes;
 
   $('#equationsWindow').modal({ show: false});
 
@@ -193,191 +193,31 @@ $(document).ready(function() {
   resizeCanvas();
 
 
-    $("#pickNetwork").change(function() {
+  $("#pickNetwork").change(function() {
 
-      nodesArray = networks[$("#pickNetwork").val()].nodes;
+    nodesArray = networks[$("#pickNetwork").val()].nodes;
 
-      selectedNode = null;
-      pmuLocations = null;
+    selectedNode = null;
+    pmuLocations = null;
 
-      $("#status").hide();
+    nodes = new vis.DataSet([]);
+    edges = new vis.DataSet([]);
 
-      nodes.clear();
-      network = new vis.Network(container, data, options);
-      generateData();
-      updateNodeList();
-      resizeCanvas();
-    });
+    data = {
+      nodes: nodes,
+      edges: edges
+    };
 
-    function selectNode(id) {
-      clearPmuLocations();
-      id = parseInt(id);
-      if((mode == "edit") && (selectedNode != null)) {
-        
-
-        if(selectedNode == id) {
-          // Clear previously selected stuff 
-          network.unselectAll();
-          nodes.update({id: selectedNode, color: colors.normal});
-          $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
-          $.each( nodesArray[selectedNode], function( i, node ) {
-            nodes.update({id: node, color: colors.normal});
-            $("#" + node).removeClass('btn-warning');
-            $("#" + node).addClass('btn-success');
-          });
-          /////////////////////////////////////////////////////////////
-          selectedNode = null;
-
-        }
-        else {
-          if(($.inArray(id, nodesArray[selectedNode]) >= 0) || ($.inArray(selectedNode, nodesArray[id]) >= 0)) {
-
-            var tmpNode1 = network.getConnectedEdges(selectedNode);
-            var tmpNode2 = network.getConnectedEdges(id);
-
-            $.each( tmpNode1, function( i, node1 ) {
-              
-                $.each( tmpNode2, function( j, node2 ) {
-                  if(node1 == node2)
-                  {
-                    edges.remove({id:node1});
-                    edges.remove({id:node2});
-                  }
-                });
-              
-            });
-
-
-            nodesArray[selectedNode].splice($.inArray(id, nodesArray[selectedNode]), 1);
-            nodesArray[id].splice($.inArray(selectedNode, nodesArray[id]), 1);
-
-            nodes.update({id: id, color: colors.normal});
-            updateNodeList();
-
-            // CLEAR
-            $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
-            $.each( nodesArray[selectedNode], function( i, node ) {
-              nodes.update({id: node, color: colors.normal});
-              $("#" + node).removeClass('btn-warning');
-              $("#" + node).addClass('btn-success');
-            });
-
-
-            $("#" + selectedNode).removeClass('btn-success');
-            $("#" + selectedNode).addClass('btn-primary');
-            
-            $.each( nodesArray[selectedNode], function( i, node ) {
-              nodes.update({id: node, color: colors.secondary});
-              $("#" + node).removeClass('btn-success');
-              $("#" + node).addClass('btn-warning');
-            });
-          }
-          else {
-            nodesArray[selectedNode].push(id);
-            nodesArray[id].push(selectedNode);
-            updateNodeList();
-            nodes.update({id: id, color: colors.secondary});
-            edges.add({
-                from: id,
-                to: selectedNode,
-                smooth: false,
-                color: {
-                  color: "#000",
-                  highlight: '#000',
-                  hover: '#000'
-                }
-            });
-
-            edges.add({
-                from: selectedNode,
-                to: id,
-                smooth: false,
-                color: {
-                  color: "#000",
-                  highlight: '#000',
-                  hover: '#000'
-                }
-            });
-
-            // CLEAR
-            $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
-            $.each( nodesArray[selectedNode], function( i, node ) {
-              nodes.update({id: node, color: colors.normal});
-              $("#" + node).removeClass('btn-warning');
-              $("#" + node).addClass('btn-success');
-            });
-
-
-            $("#" + selectedNode).removeClass('btn-success');
-            $("#" + selectedNode).addClass('btn-primary');
-            
-            $.each( nodesArray[selectedNode], function( i, node ) {
-              nodes.update({id: node, color: colors.secondary});
-              $("#" + node).removeClass('btn-success');
-              $("#" + node).addClass('btn-warning');
-            });
-          }
-        }
-      }
-      else if(mode == "edit") {
-        // Clear previously selected stuff 
-        network.unselectAll();
-        $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
-        $.each( nodesArray[selectedNode], function( i, node ) {
-          nodes.update({id: node, color: colors.normal});
-          $("#" + node).removeClass('btn-warning');
-          $("#" + node).addClass('btn-success');
-        });
-        /////////////////////////////////////////////////////////////
-
-        // Change global selected node
-        selectedNode = id;
-        $("#" + selectedNode).removeClass('btn-success');
-        $("#" + selectedNode).addClass('btn-primary');
-        
-        $.each( nodesArray[selectedNode], function( i, node ) {
-          nodes.update({id: node, color: colors.secondary});
-          $("#" + node).removeClass('btn-success');
-          $("#" + node).addClass('btn-warning');
-        });
-        nodes.update({id: selectedNode, color: colors.selected});
-        //network.selectNodes(selectedNode);
-      }
-      else {
-
-        if((mode == "edit") && (selectedNode == null)) {
-          $("#status").html("Select nodes to connect to.");
-        }
-        // Clear previously selected stuff 
-        network.unselectAll();
-        if(selectedNode) {
-          nodes.update({id: selectedNode, color: colors.normal});
-        }
-        $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
-        $.each( nodesArray[selectedNode], function( i, node ) {
-          nodes.update({id: node, color: colors.normal});
-          $("#" + node).removeClass('btn-warning');
-          $("#" + node).addClass('btn-success');
-        });
-        /////////////////////////////////////////////////////////////
-
-        // Change global selected node
-        selectedNode = id;
-        $("#" + selectedNode).removeClass('btn-success');
-        $("#" + selectedNode).addClass('btn-primary');
-        
-        $.each( nodesArray[selectedNode], function( i, node ) {
-          nodes.update({id: node, color: colors.secondary});
-          $("#" + node).removeClass('btn-success');
-          $("#" + node).addClass('btn-warning');
-        });
-
-        //network.selectNodes(selectedNode);
-        nodes.update({id: selectedNode, color: colors.selected});
-      }
-    }
-
+    $("#status").hide();
+    
+    network = new vis.Network(container, data, options);
+    generateData();
+    updateNodeList();
+    resizeCanvas();
+    $("#nodes").height(window.innerHeight-$("#controls").height()-50);
     network.on('click', function(properties) {
+
+    console.log('clicked');
       if(properties.nodes.length > 0) {
         //console.log(properties.nodes);
         selectNode(properties.nodes);
@@ -385,159 +225,17 @@ $(document).ready(function() {
       
     });
 
-    // $('html').keyup(function(e){
-    //   if(selectedNode && (mode == "edit")) {
-    //     if(e.keyCode == 46) {
-    //         $.each( nodesArray, function( i, nodeRow ) {
+  });
 
-    //           nodesArray[i] = $.grep(nodesArray[i], function(value) {
-    //                             return value != selectedNode;
-    //                           });
-    //         });
-    //         nodes.remove({id: selectedNode});
-    //         nodesArray.splice(selectedNode, 1); 
-    //         nodes.clear();
-    //         generateData();
-    //         updateNodeList();
-    //     }
-    //   }
-    // });
-
-
-
-    $(document.body).on('click', '.nodeRow', function() {
-        selectNode($(this).find(".label").attr("id"));
-    });
-
-    $("#view").click(function(){
-      mode = 'view';
-      $("#view").removeClass('btn-secondary');
-      $("#view").addClass('btn-success');
-      $("#edit").removeClass('btn-success');
-      $("#edit").addClass('btn-secondary');
-      $("#status").html("&nbsp;");
-      $("#addNode").hide();
-      $(".optimize").show();
-      $("#import").hide();
-    });
-
-    $("#edit").click(function(){
-      mode = 'edit';
-      $("#view").removeClass('btn-success');
-      $("#view").addClass('btn-secondary');
-      $("#edit").removeClass('btn-secondary');
-      $("#edit").addClass('btn-success');
-      $("#addNode").show();
-      $(".optimize").hide();
-      $("#import").show();
-      clearPmuLocations();
-      if(selectedNode) {
-        var tmp = selectedNode;
-        selectedNode = null;
-        selectNode(tmp);
-      }
-      else {
-        $("#status").html("Select a node");
-      }
+  function selectNode(id) {
+    clearPmuLocations();
+    id = parseInt(id);
+    if((mode == "edit") && (selectedNode != null)) {
       
-    });
 
-    var pmuLocations = [];
-
-    function genObjective(length) {
-      var tmpString = '';
-      for(var i=0; i<length; i++) {
-        tmpString += 'x' + i;
-        if(i != length-1) {
-          tmpString += ' + ';
-        }
-      }
-      return tmpString;
-    }
-
-    function genConstraints() {
-      var tmpArray = [];
-      var tmpString = '';
-
-      $.each( nodesArray, function( i, node ) {
-
-        $.each( nodesArray[i], function( j, node2 ) {
-          tmpString += 'x' + node2 + ' + ';
-        });
-        tmpString += 'x' + i;
-        tmpString += ' >= 1';
-        tmpArray.push(tmpString);
-
-        tmpString = '';
-      });
-
-      return tmpArray;
-    }
-
-    function genBounds(length) {
-      var tmpString = '';
-      for(var i=0; i<length; i++) {
-        tmpString += 'x' + i + ' <= 1\n';
-      }
-      return tmpString;
-    }
-
-    function genDef(length) {
-      var tmpString = '';
-      for(var i=0; i<length; i++) {
-        tmpString += 'x' + i + '\n';
-      }
-      return tmpString;
-    }
-
-    function compile(objective, constraints, bounds, definitions) {
-        var tmpString = 'Minimize\n';
-        tmpString += 'obj: ';
-        tmpString += objective + '\n';
-        tmpString += '\n';
-        tmpString += 'Subject To\n';
-        $.each( constraints, function( i, constraint ) {
-          tmpString += 'lim_' + i + ':';
-          tmpString += constraint + '\n';
-        });
-        tmpString += '\n';
-        tmpString += 'Bounds\n';
-        tmpString += bounds;
-        tmpString += '\n';
-
-        tmpString += 'General\n';
-        tmpString += definitions;
-        tmpString += '\n';
-        tmpString += 'End';
-
-        return tmpString;
-    }
-
-    function clearPmuLocations() {
-      $.each( pmuLocations, function( i, node ) {
-          nodes.update({id: node, color: colors.normal});
-          $("#" + node).removeClass('btn-danger');
-          console.log("removing: " + "#" + node);
-      });
-      
-      pmuLocations = [];
-    }
-
-    $("#constraints").click(function() {
-      $('#equationsWindow').modal('show');
-      $("#constraintsBody").html('');
-      $.each( genConstraints(), function( i, constraint ) {
-        $("#constraintsBody").append('`' + constraint + "`<br>");
-      });
-      var math = document.getElementById("constraintsBody");
-      MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
-    });
-
-    $("#optimize").click(function() {
-      console.log(JSON.stringify(nodesArray));
-      // Clear previously selected stuff 
-      network.unselectAll();
-      if(selectedNode) {
+      if(selectedNode == id) {
+        // Clear previously selected stuff 
+        network.unselectAll();
         nodes.update({id: selectedNode, color: colors.normal});
         $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
         $.each( nodesArray[selectedNode], function( i, node ) {
@@ -545,83 +243,405 @@ $(document).ready(function() {
           $("#" + node).removeClass('btn-warning');
           $("#" + node).addClass('btn-success');
         });
+        /////////////////////////////////////////////////////////////
+        selectedNode = null;
+
       }
-      
-      clearPmuLocations();
-      
+      else {
+        if(($.inArray(id, nodesArray[selectedNode]) >= 0) || ($.inArray(selectedNode, nodesArray[id]) >= 0)) {
 
-      var start = new Date(); 
-      var lp = glp_create_prob();
-      glp_read_lp_from_string(lp, null, compile(genObjective(nodesArray.length), genConstraints(), genBounds(nodesArray.length), genDef(nodesArray.length)));
+          var tmpNode1 = network.getConnectedEdges(selectedNode);
+          var tmpNode2 = network.getConnectedEdges(id);
 
-      glp_scale_prob(lp, GLP_SF_AUTO);
+          $.each( tmpNode1, function( i, node1 ) {
+            
+              $.each( tmpNode2, function( j, node2 ) {
+                if(node1 == node2)
+                {
+                  edges.remove({id:node1});
+                  edges.remove({id:node2});
+                }
+              });
+            
+          });
 
-      var smcp = new SMCP({presolve: GLP_ON});
-      glp_simplex(lp, smcp);
 
-      var iocp = new IOCP({presolve: GLP_ON});
-      glp_intopt(lp, iocp);
+          nodesArray[selectedNode].splice($.inArray(id, nodesArray[selectedNode]), 1);
+          nodesArray[id].splice($.inArray(selectedNode, nodesArray[id]), 1);
 
-      console.log("obj: " + glp_mip_obj_val(lp));
-      for(var i = 1; i <= glp_get_num_cols(lp); i++){
-          console.log(glp_get_col_name(lp, i).substr(1)  + " = " + glp_mip_col_val(lp, i));
-          if(glp_mip_col_val(lp, i)) {
-            pmuLocations.push(parseInt(glp_get_col_name(lp, i).substr(1)));
-            nodes.update({id: parseInt(glp_get_col_name(lp, i).substr(1)), color: colors.pmu});
-            $("#" + parseInt(glp_get_col_name(lp, i).substr(1))).addClass('btn-danger');
-          }
+          nodes.update({id: id, color: colors.normal});
+          updateNodeList();
+
+          // CLEAR
+          $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+          $.each( nodesArray[selectedNode], function( i, node ) {
+            nodes.update({id: node, color: colors.normal});
+            $("#" + node).removeClass('btn-warning');
+            $("#" + node).addClass('btn-success');
+          });
+
+
+          $("#" + selectedNode).removeClass('btn-success');
+          $("#" + selectedNode).addClass('btn-primary');
+          
+          $.each( nodesArray[selectedNode], function( i, node ) {
+            nodes.update({id: node, color: colors.secondary});
+            $("#" + node).removeClass('btn-success');
+            $("#" + node).addClass('btn-warning');
+          });
+        }
+        else {
+          nodesArray[selectedNode].push(id);
+          nodesArray[id].push(selectedNode);
+          updateNodeList();
+          nodes.update({id: id, color: colors.secondary});
+          edges.add({
+              from: id,
+              to: selectedNode,
+              smooth: false,
+              color: {
+                color: "#000",
+                highlight: '#000',
+                hover: '#000'
+              }
+          });
+
+          edges.add({
+              from: selectedNode,
+              to: id,
+              smooth: false,
+              color: {
+                color: "#000",
+                highlight: '#000',
+                hover: '#000'
+              }
+          });
+
+          // CLEAR
+          $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+          $.each( nodesArray[selectedNode], function( i, node ) {
+            nodes.update({id: node, color: colors.normal});
+            $("#" + node).removeClass('btn-warning');
+            $("#" + node).addClass('btn-success');
+          });
+
+
+          $("#" + selectedNode).removeClass('btn-success');
+          $("#" + selectedNode).addClass('btn-primary');
+          
+          $.each( nodesArray[selectedNode], function( i, node ) {
+            nodes.update({id: node, color: colors.secondary});
+            $("#" + node).removeClass('btn-success');
+            $("#" + node).addClass('btn-warning');
+          });
+        }
       }
+    }
+    else if(mode == "edit") {
+      // Clear previously selected stuff 
+      network.unselectAll();
+      $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+      $.each( nodesArray[selectedNode], function( i, node ) {
+        nodes.update({id: node, color: colors.normal});
+        $("#" + node).removeClass('btn-warning');
+        $("#" + node).addClass('btn-success');
+      });
+      /////////////////////////////////////////////////////////////
 
-      var SORI = 0;
-      var ORC = 0;
+      // Change global selected node
+      selectedNode = id;
+      $("#" + selectedNode).removeClass('btn-success');
+      $("#" + selectedNode).addClass('btn-primary');
+      
+      $.each( nodesArray[selectedNode], function( i, node ) {
+        nodes.update({id: node, color: colors.secondary});
+        $("#" + node).removeClass('btn-success');
+        $("#" + node).addClass('btn-warning');
+      });
+      nodes.update({id: selectedNode, color: colors.selected});
+      //network.selectNodes(selectedNode);
+    }
+    else {
 
-      $.each( nodesArray, function( i, node ) {
-        $.each( nodesArray[i], function( j, pmu ) {
-          ORC++;
-          if($.inArray(nodesArray[i][j], pmuLocations) !== -1) {
-            console.log(nodesArray[i][j])
-            SORI++;
-          }
-        });
-        if($.inArray(i, pmuLocations) !== -1) {
-          SORI = SORI + 2;
+      if((mode == "edit") && (selectedNode == null)) {
+        $("#status").html("Select nodes to connect to.");
+      }
+      // Clear previously selected stuff 
+      network.unselectAll();
+      if(selectedNode) {
+        nodes.update({id: selectedNode, color: colors.normal});
+      }
+      $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+      $.each( nodesArray[selectedNode], function( i, node ) {
+        nodes.update({id: node, color: colors.normal});
+        $("#" + node).removeClass('btn-warning');
+        $("#" + node).addClass('btn-success');
+      });
+      /////////////////////////////////////////////////////////////
+
+      // Change global selected node
+      selectedNode = id;
+      $("#" + selectedNode).removeClass('btn-success');
+      $("#" + selectedNode).addClass('btn-primary');
+      
+      $.each( nodesArray[selectedNode], function( i, node ) {
+        nodes.update({id: node, color: colors.secondary});
+        $("#" + node).removeClass('btn-success');
+        $("#" + node).addClass('btn-warning');
+      });
+
+      //network.selectNodes(selectedNode);
+      nodes.update({id: selectedNode, color: colors.selected});
+    }
+  }
+
+  network.on('click', function(properties) {
+
+  console.log('clicked');
+    if(properties.nodes.length > 0) {
+      //console.log(properties.nodes);
+      selectNode(properties.nodes);
+    }
+    
+  });
+
+  // $('html').keyup(function(e){
+  //   if(selectedNode && (mode == "edit")) {
+  //     if(e.keyCode == 46) {
+  //         $.each( nodesArray, function( i, nodeRow ) {
+
+  //           nodesArray[i] = $.grep(nodesArray[i], function(value) {
+  //                             return value != selectedNode;
+  //                           });
+  //         });
+  //         nodes.remove({id: selectedNode});
+  //         nodesArray.splice(selectedNode, 1); 
+  //         nodes.clear();
+  //         generateData();
+  //         updateNodeList();
+  //     }
+  //   }
+  // });
+
+
+
+  $(document.body).on('click', '.nodeRow', function() {
+      selectNode($(this).find(".label").attr("id"));
+  });
+
+  $("#view").click(function(){
+    mode = 'view';
+    $("#view").removeClass('btn-secondary');
+    $("#view").addClass('btn-success');
+    $("#edit").removeClass('btn-success');
+    $("#edit").addClass('btn-secondary');
+    $("#status").html("&nbsp;");
+    $("#addNode").hide();
+    $(".optimize").show();
+    $("#import").hide();
+  });
+
+  $("#edit").click(function(){
+    mode = 'edit';
+    $("#view").removeClass('btn-success');
+    $("#view").addClass('btn-secondary');
+    $("#edit").removeClass('btn-secondary');
+    $("#edit").addClass('btn-success');
+    $("#addNode").show();
+    $(".optimize").hide();
+    $("#import").show();
+    clearPmuLocations();
+    if(selectedNode) {
+      var tmp = selectedNode;
+      selectedNode = null;
+      selectNode(tmp);
+    }
+    else {
+      $("#status").html("Select a node");
+    }
+    
+  });
+
+  var pmuLocations = [];
+
+  function genObjective(length) {
+    var tmpString = '';
+    for(var i=0; i<length; i++) {
+      tmpString += 'x' + i;
+      if(i != length-1) {
+        tmpString += ' + ';
+      }
+    }
+    return tmpString;
+  }
+
+  function genConstraints() {
+    var tmpArray = [];
+    var tmpString = '';
+
+    $.each( nodesArray, function( i, node ) {
+
+      $.each( nodesArray[i], function( j, node2 ) {
+        tmpString += 'x' + node2 + ' + ';
+      });
+      tmpString += 'x' + i;
+      tmpString += ' >= 1';
+      tmpArray.push(tmpString);
+
+      tmpString = '';
+    });
+
+    return tmpArray;
+  }
+
+  function genBounds(length) {
+    var tmpString = '';
+    for(var i=0; i<length; i++) {
+      tmpString += 'x' + i + ' <= 1\n';
+    }
+    return tmpString;
+  }
+
+  function genDef(length) {
+    var tmpString = '';
+    for(var i=0; i<length; i++) {
+      tmpString += 'x' + i + '\n';
+    }
+    return tmpString;
+  }
+
+  function compile(objective, constraints, bounds, definitions) {
+      var tmpString = 'Minimize\n';
+      tmpString += 'obj: ';
+      tmpString += objective + '\n';
+      tmpString += '\n';
+      tmpString += 'Subject To\n';
+      $.each( constraints, function( i, constraint ) {
+        tmpString += 'lim_' + i + ':';
+        tmpString += constraint + '\n';
+      });
+      tmpString += '\n';
+      tmpString += 'Bounds\n';
+      tmpString += bounds;
+      tmpString += '\n';
+
+      tmpString += 'General\n';
+      tmpString += definitions;
+      tmpString += '\n';
+      tmpString += 'End';
+
+      return tmpString;
+  }
+
+  function clearPmuLocations() {
+    $.each( pmuLocations, function( i, node ) {
+        nodes.update({id: node, color: colors.normal});
+        $("#" + node).removeClass('btn-danger');
+        console.log("removing: " + "#" + node);
+    });
+    
+    pmuLocations = [];
+  }
+
+  $("#constraints").click(function() {
+    $('#equationsWindow').modal('show');
+    $("#constraintsBody").html('');
+    $.each( genConstraints(), function( i, constraint ) {
+      $("#constraintsBody").append('C' + i + ': `' + constraint + "`<br>");
+    });
+    var math = document.getElementById("constraintsBody");
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,math]);
+  });
+
+  $("#optimize").click(function() {
+    console.log(JSON.stringify(nodesArray));
+    // Clear previously selected stuff 
+    network.unselectAll();
+    if(selectedNode) {
+      nodes.update({id: selectedNode, color: colors.normal});
+      $("#nodes").find(".btn-primary").removeClass('btn-primary').addClass('btn-success');
+      $.each( nodesArray[selectedNode], function( i, node ) {
+        nodes.update({id: node, color: colors.normal});
+        $("#" + node).removeClass('btn-warning');
+        $("#" + node).addClass('btn-success');
+      });
+    }
+    
+    clearPmuLocations();
+    
+
+    var start = new Date(); 
+    var lp = glp_create_prob();
+    glp_read_lp_from_string(lp, null, compile(genObjective(nodesArray.length), genConstraints(), genBounds(nodesArray.length), genDef(nodesArray.length)));
+
+    glp_scale_prob(lp, GLP_SF_AUTO);
+
+    var smcp = new SMCP({presolve: GLP_ON});
+    glp_simplex(lp, smcp);
+
+    var iocp = new IOCP({presolve: GLP_ON});
+    glp_intopt(lp, iocp);
+
+    console.log("obj: " + glp_mip_obj_val(lp));
+    for(var i = 1; i <= glp_get_num_cols(lp); i++){
+        console.log(glp_get_col_name(lp, i).substr(1)  + " = " + glp_mip_col_val(lp, i));
+        if(glp_mip_col_val(lp, i)) {
+          pmuLocations.push(parseInt(glp_get_col_name(lp, i).substr(1)));
+          nodes.update({id: parseInt(glp_get_col_name(lp, i).substr(1)), color: colors.pmu});
+          $("#" + parseInt(glp_get_col_name(lp, i).substr(1))).addClass('btn-danger');
+        }
+    }
+
+    var SORI = 0;
+    var ORC = 0;
+
+    $.each( nodesArray, function( i, node ) {
+      $.each( nodesArray[i], function( j, pmu ) {
+        ORC++;
+        if($.inArray(nodesArray[i][j], pmuLocations) !== -1) {
+          console.log(nodesArray[i][j])
+          SORI++;
         }
       });
-      ORC /= nodesArray.length;
-      console.log(ORC);
-      $("#status").html("<b>SORI: </b>" + SORI);
-      $("#status").show();
-      $("#nodes").height(window.innerHeight-$("#controls").height()-50);
-      //$("#status").append("<br><b>ORC: </b>" + ORC);
+      if($.inArray(i, pmuLocations) !== -1) {
+        SORI = SORI + 2;
+      }
     });
-
-    $("#import").click(function() {
-      $('#importWindow').modal('show');
-    });
-
-    $("#importBtn").click(function() {
-      var importData = JSON.parse($('#importData').val());
-      var tmpData = [];
-
-      $.each( importData, function( i, node ) {
-        tmpData[i] = [];
-        $.each( importData[i], function( j, node2 ) {
-          if(node2) {
-            if(i != j) {
-              tmpData[i].push(j);
-            }
-          } 
-        });
-      });
-
-
-      nodesArray = tmpData;
-
-      nodes.clear();
-      generateData();
-      updateNodeList();
-      resizeCanvas();
-
-      $('#importWindow').modal('hide');
-    });
+    ORC /= nodesArray.length;
+    console.log(ORC);
+    $("#status").html("<b>SORI: </b>" + SORI);
+    $("#status").show();
+    $("#nodes").height(window.innerHeight-$("#controls").height()-50);
+    //$("#status").append("<br><b>ORC: </b>" + ORC);
   });
+
+  $("#import").click(function() {
+    $('#importWindow').modal('show');
+  });
+
+  $("#importBtn").click(function() {
+    var importData = JSON.parse($('#importData').val());
+    var tmpData = [];
+
+    $.each( importData, function( i, node ) {
+      tmpData[i] = [];
+      $.each( importData[i], function( j, node2 ) {
+        if(node2) {
+          if(i != j) {
+            tmpData[i].push(j);
+          }
+        } 
+      });
+    });
+
+
+    nodesArray = tmpData;
+
+    nodes.clear();
+    generateData();
+    updateNodeList();
+    resizeCanvas();
+
+    $('#importWindow').modal('hide');
+  });
+}); 
