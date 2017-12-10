@@ -1,177 +1,196 @@
 $(document).ready(function() {
 
-    $(window).resize(function() {
-      $("#nodes").height(window.innerHeight-$("#controls").height()-50);
-    });
+  // Resize sidebar stuff so it doesn't have a scrollbar/ 
+  $(window).resize(function() {
     $("#nodes").height(window.innerHeight-$("#controls").height()-50);
+  });
+  $("#nodes").height(window.innerHeight-$("#controls").height()-50);
 
-    window.addEventListener('resize', resizeCanvas, false);
-    function resizeCanvas() {
-        $("#mynetwork").find("canvas").attr('height', window.innerHeight-25);
-        $("#mynetwork").find("canvas").attr('width', window.innerWidth-250);
-        network.redraw();
-        network.fit();
-    }
+  // Resize the canvas when the window is resized.
+  window.addEventListener('resize', resizeCanvas, false);
+  function resizeCanvas() {
+      $("#network").find("canvas").attr('height', window.innerHeight-25);
+      $("#network").find("canvas").attr('width', window.innerWidth-250);
+      network.redraw();
+      network.fit();
+  }
     
 
-    $("#addNode").hide();
-    $("#import").hide();
 
-    var mode = 'view';
+  /***********  INITIALIZATION **************/
+  $("#addNode").hide();
+  $("#import").hide();
 
-    var selectedNode = null;
+  var mode = 'view';
 
-    var networks = {
-                      "14" : {
-                          nodes: [[1,4],[0,2,3,4],[1],[1,2,4,6,8],[0,1],[3,10,11,12],[7,8],[3,6],[6,9,13],[3,8,10],[5,9],[5,12],[5,11,13],[8,12]]
-                      },
-                      "30" : {
-                          nodes: [[1,2],[0,3,4,5],[0,3],[2,5,11],[1,6],[3,7,8,9,27],[4,5],[5,27],[5,9,10],[8,16,19,20,21],[8],[3,12,13,14,15],[11],[11,14],[11,13,17,22],[11,16],[9,15],[14,18],[17,19],[9,18],[9,21],[9,20,23],[14,23],[21,22,24],[23,25,26],[24],[24,27,28,29],[5,7,26],[26,29],[26,28]]
-                      }
-                   };
+  var selectedNode = null;
 
-    var nodesArray = [[1,2],[0,3,4,5],[0,3],[2,5,11],[1,6],[3,7,8,9,27],[4,5],[5,27],[5,9,10],[8,16,19,20,21],[8],[3,12,13,14,15],[11],[11,14],[11,13,17,22],[11,16],[9,15],[14,18],[17,19],[9,18],[9,21],[9,20,23],[14,23],[21,22,24],[23,25,26],[24],[24,27,28,29],[5,7,26],[26,29],[26,28]];
-
-
-    var colors = { 
-          normal : {
-                      background: "#67c482",
-                      border: "#67c482",
-                      highlight: {
-                        background: '#67c482',
-                        border: '#67c482'
-                      }
-
+  // Pre-saved networks
+  var networks = {
+                    "14" : {
+                        nodes: [[1,4],[0,2,3,4],[1],[1,2,4,6,8],[0,1],[3,10,11,12],[7,8],[3,6],[6,9,13],[3,8,10],[5,9],[5,12],[5,11,13],[8,12]]
                     },
-          secondary : {
-                        background: "#ffd758",
-                        border: "#ffd758",
-                        highlight: {
-                          background: '#ffd758',
-                          border: '#ffd758'
-                        }
-                      },
-          selected : {
-                      background: "#57a5ff",
-                      border: "#57a5ff"
-                      },
-          pmu : {
-                      background: "tomato",
-                      border: "tomato"
-                      },            
-        };
+                    "30" : {
+                        nodes: [[1,2],[0,3,4,5],[0,3],[2,5,11],[1,6],[3,7,8,9,27],[4,5],[5,27],[5,9,10],[8,16,19,20,21],[8],[3,12,13,14,15],[11],[11,14],[11,13,17,22],[11,16],[9,15],[14,18],[17,19],[9,18],[9,21],[9,20,23],[14,23],[21,22,24],[23,25,26],[24],[24,27,28,29],[5,7,26],[26,29],[26,28]]
+                    },
+                    "57" : {
+                        nodes: [[1,14,15,16],[0,2],[1,3,14],[2,4,5,17],[3,5],[3,4,6,7],[5,7,28],[5,6,8],[7,9,10,11,12,54],[8,11,50],[8,12,40,42],[8,9,12,15,16],[8,10,11,13,14,48],[12,14,45],[12,13,0,2,44],[0,11],[0,11],[3,18],[17,19],[18,20],[19,21],[20,22,37],[21,23],[22,24,25],[23,29],[23,26],[25,27],[26,28],[6,27,51],[24,30],[29,31],[30,32,33],[31],[31,34],[33,35],[34,36,39],[35,37,38],[36,21,43,47,48],[36,56],[35,55],[10,41,42,55],[40,55],[10,40],[37,44],[14,43],[13,46],[45,47],[37,46,48],[12,37,47,49],[48,50],[9,49],[28,52],[51,53],[52,54],[8,53],[39,40,41,56],[38,55]]
+                    },
+                    "118" : {
+                        nodes: [[1,2],[0,11],[0,11,4],[4,10],[2,3,5,7,10],[4,6],[5,11],[4,8,29],[7,9],[8,0],[3,4,0,11,12],[1,2,6,10,13,15,116],[10,14],[11,14],[12,13,16,18],[11,16],[14,15,17,29,30,112],[16,18],[14,17,19,33],[18,20],[19,21],[20,22],[21,23,24,31],[22,69,71],[22,25,26],[24,29],[25,27,31,114],[26,28],[27,30],[7,16,25,37],[16,28,31],[22,26,30,112,113],[14,36],[18,35,36,42],[35,36],[33,34],[32,33,34,37,38,39],[29,36,64],[36,39],[36,38,40,41],[39,41],[39,40,48],[33,43],[42,44],[43,45,48],[44,46,47],[45,48,68],[45,48],[41,44,46,47,49,50,53,65],[48,56],[48,51,57],[50,52],[51,53],[48,52,54,55,58],[53,55,58],[53,54,56,57,58],[49,55],[50,55],[53,54,55,59,60,62],[58,60,61],[58,59,61,63],[59,60,65,66],[58,63],[60,62,64],[37,63,65,67],[48,61,64,66],[61,65],[64,68,115],[46,48,67,69,74,76],[23,68,70,73,74],[69,71,72],[23,70],[70],[69,74],[69,73,76,117],[76,117],[68,74,75,77,79],[76,78],[77,79],[76,78,80,95,96,97,98],[79,115],[76,82,95],[81,83,84],[82,84],[82,83,85,87,88],[84,86],[85],[84,88],[84,87,89,91],[88,90],[89,91],[88,90,92,93,99,101],[91,93],[91,92,94,95,99],[93,95],[79,81,93,94,96],[79,95],[79,99],[79,99],[91,93,97,98,100,102,103,105],[99,101],[92,100],[99,103,104,109],[99,102,104],[103,105,106,107],[99,104,106],[104,105],[104,108],[107,109],[102,108,110,111],[109],[109],[16,31],[31,114],[26,113],[67],[11],[74,75]]
+                    }
+                 };
+
+  var nodesArray = networks["57"].nodes;
+
+  $('#equationsWindow').modal({ show: false});
 
 
-    $('#equationsWindow').modal({ show: false});
 
 
-    function updateNodeList() {
-      $("#nodes").html('');
-      $.each( nodesArray, function( key, value ) {
-        var newNode = '<div class="btn-group nodeRow" role="group">';
-        newNode += '<a href="#" class="btn';
-        
-        if(selectedNode == key)
-        {
-          newNode += ' btn-primary';
-        }
-        else {
-          newNode += ' btn-success';
-        }
-        newNode += ' btn-sm disabled label" role="button" aria-disabled="true" id="' + key + '">' + key + '</a>';
-        $.each( value, function( i, node ) {
-          newNode += '<a href="#" class="btn btn-secondary btn-sm disabled" role="button" aria-disabled="true">' + node + '</a>';
-        });
 
-        newNode += '</div>';
-        $("#nodes").append(newNode);
-      });
+  /***********  VIS.JS NODE COLORS  **************/
+  var colors = { 
+        normal : {
+                    background: "#67c482",
+                    border: "#67c482",
+                    highlight: {
+                      background: '#67c482',
+                      border: '#67c482'
+                    }
+
+                  },
+        secondary : {
+                      background: "#ffd758",
+                      border: "#ffd758",
+                      highlight: {
+                        background: '#ffd758',
+                        border: '#ffd758'
+                      }
+                    },
+        selected : {
+                    background: "#57a5ff",
+                    border: "#57a5ff"
+                    },
+        pmu : {
+                    background: "tomato",
+                    border: "tomato"
+                    },            
+      };
+
+
+
+  /***********  VIS.JS NETWORK SETUP  **************/
+
+  // Initialize nodes & edges variables
+  var nodes = new vis.DataSet([]);
+  var edges = new vis.DataSet([]);
+
+  // Define canvas location
+  var container = document.getElementById('network');
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+
+  // Vis.js options. Physics stuff.
+  var options = {
+    autoResize: false,
+    height: '100%',
+    width: '100%',
+    physics: {
+      repulsion: {
+        springLength: 40,
+        damping: 0.2,
+        centralGravity: 0.02,
+        springConstant:0.04
+      },
+      solver: 'repulsion'
     }
+  };
 
-    $("#addNode").click(function(){
-      nodesArray.push([]);
+  // Create the network and attach to canvas
+  var network = new vis.Network(container, data, options);
+
+
+  // Generates the new sidebar content every time something changes in the network.
+  function updateNodeList() {
+    $("#nodes").html('');
+
+    // Loop through each node
+    $.each( nodesArray, function( key, value ) {
+
+      var newNode = '<div class="btn-group nodeRow" role="group">';
+      newNode += '<a href="#" class="btn';
+      
+      if(selectedNode == key) newNode += ' btn-primary';
+      else newNode += ' btn-success';
+
+      newNode += ' btn-sm disabled label" role="button" aria-disabled="true" id="' + key + '">' + key + '</a>';
+
+      // Look through each connected node
+      $.each( value, function( i, node ) {
+        newNode += '<a href="#" class="btn btn-secondary btn-sm disabled" role="button" aria-disabled="true">' + node + '</a>';
+      });
+
+      newNode += '</div>';
+
+      $("#nodes").append(newNode);
+    });
+  }
+
+  // "Add Node" Button. 
+  $("#addNode").click(function(){
+    // Add empty array to master array.
+    nodesArray.push([]);
+
+    // Add it to the visual network
+    nodes.add({
+        id: nodesArray.length-1,
+        label: " " + (nodesArray.length-1).toString(),
+        font:{size:15, color: '#ffffff'},
+        size:40,
+        shape: 'circle', 
+        color: colors.normal
+    });
+
+    // Regenerate sidebar ndoes.
+    updateNodeList();
+  });
+
+  // Generates the visual network from the master array.
+  function generateData() {
+    $.each( nodesArray, function( key, value ) {
+
+      // Create the node
       nodes.add({
-          id: nodesArray.length-1,
-          label: " " + (nodesArray.length-1).toString(),
+          id: key,
+          label: ' ' + key.toString(),
           font:{size:15, color: '#ffffff'},
           size:40,
-          shape: 'circle', 
+          shape: 'circle',
           color: colors.normal
       });
-      updateNodeList();
-    });
 
-    
-
-
-
-    // create an array with nodes
-    var nodes = new vis.DataSet([]);
-
-    // create an array with edges
-    var edges = new vis.DataSet([]);
-
-   
-    // create a network
-    var container = document.getElementById('mynetwork');
-    var data = {
-      nodes: nodes,
-      edges: edges
-    };
-    var options = {
-      autoResize: false,
-      height: '100%',
-      width: '100%',
-      physics: {
-        forceAtlas2Based: {
-          springLength: 50,
-          damping: 0.2,
-          centralGravity: 0.02,
-          springConstant:0.04
-        },
-        repulsion: {
-          springLength: 50,
-          damping: 0.2,
-          centralGravity: 0.02,
-          springConstant:0.04
-        },
-        solver: 'repulsion'
-      }
-    };
-    var network = new vis.Network(container, data, options);
-
-    function generateData() {
-      $.each( nodesArray, function( key, value ) {
-        nodes.add({
-            id: key,
-            label: ' ' + key.toString(),
-            font:{size:15, color: '#ffffff'},
-            size:40,
-            shape: 'circle', /*
-            shape: 'image',
-            image: 'images/normal.jpg', */
-            color: colors.normal
-
-                
-        });
-        $.each( value, function( i, node ) {
-            edges.add({
-                from: key,
-                to: node,
-                smooth: false,
-                color: {
-                  color: "#000",
-                  highlight: '#000',
-                  hover: '#000'
-                }
-            });
-        });
+      // Create the connection between each node1
+      $.each( value, function( i, node ) {
+          edges.add({
+              from: key,
+              to: node,
+              smooth: false,
+              color: {
+                color: "#000",
+                highlight: '#000',
+                hover: '#000'
+              }
+          });
       });
-    }
-     
-    generateData();
-    updateNodeList();
-    resizeCanvas();
+    });
+  }
+   
+  generateData();
+  updateNodeList();
+  resizeCanvas();
 
 
     $("#pickNetwork").change(function() {
@@ -184,6 +203,7 @@ $(document).ready(function() {
       $("#status").hide();
 
       nodes.clear();
+      network = new vis.Network(container, data, options);
       generateData();
       updateNodeList();
       resizeCanvas();
@@ -590,8 +610,7 @@ $(document).ready(function() {
             if(i != j) {
               tmpData[i].push(j);
             }
-          }
-          
+          } 
         });
       });
 
