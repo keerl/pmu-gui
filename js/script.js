@@ -28,7 +28,7 @@ $(document).ready(function() {
   // Pre-saved networks
   var networks = {
                     "14" : {
-                        nodes: [[1,4],[0,2,3,4],[1],[1,2,4,6,8],[0,1],[3,10,11,12],[7,8],[3,6],[6,9,13],[3,8,10],[5,9],[5,12],[5,11,13],[8,12]]
+                        nodes: [ [1,4],[0,2,3,4],[1],[1,2,4,6,8],[0,1],[3,10,11,12],[7,8],[3,6],[6,9,13],[3,8,10],[5,9],[5,12],[5,11,13],[8,12]]
                     },
                     "30" : {
                         nodes: [[1,2],[0,3,4,5],[0,3],[2,5,11],[1,6],[3,7,8,9,27],[4,5],[5,27],[5,9,10],[8,16,19,20,21],[8],[3,12,13,14,15],[11],[11,14],[11,13,17,22],[11,16],[9,15],[14,18],[17,19],[9,18],[9,21],[9,20,23],[14,23],[21,22,24],[23,25,26],[24],[24,27,28,29],[5,7,26],[26,29],[26,28]]
@@ -158,7 +158,8 @@ $(document).ready(function() {
     updateNodeList();
   });
 
-  // Generates the visual network from the master array.
+  // Generates the visual network from the 
+  // master array.
   function generateData() {
     $.each( nodesArray, function( key, value ) {
 
@@ -172,7 +173,7 @@ $(document).ready(function() {
           color: colors.normal
       });
 
-      // Create the connection between each node1
+      // Create the connection between each node
       $.each( value, function( i, node ) {
           edges.add({
               from: key,
@@ -480,10 +481,10 @@ $(document).ready(function() {
     var tmpString = '';
 
     $.each( nodesArray, function( i, node ) {
-
       $.each( nodesArray[i], function( j, node2 ) {
         tmpString += 'x' + node2 + ' + ';
       });
+
       tmpString += 'x' + i;
       tmpString += ' >= 1';
       tmpArray.push(tmpString);
@@ -568,11 +569,13 @@ $(document).ready(function() {
     }
     
     clearPmuLocations();
-    
 
-    var start = new Date(); 
     var lp = glp_create_prob();
-    glp_read_lp_from_string(lp, null, compile(genObjective(nodesArray.length), genConstraints(), genBounds(nodesArray.length), genDef(nodesArray.length)));
+    glp_read_lp_from_string(lp, null, compile(genObjective(nodesArray.length), 
+                                              genConstraints(), 
+                                              genBounds(nodesArray.length), 
+                                              genDef(nodesArray.length))
+                                             );
 
     glp_scale_prob(lp, GLP_SF_AUTO);
 
@@ -582,9 +585,7 @@ $(document).ready(function() {
     var iocp = new IOCP({presolve: GLP_ON});
     glp_intopt(lp, iocp);
 
-    console.log("obj: " + glp_mip_obj_val(lp));
     for(var i = 1; i <= glp_get_num_cols(lp); i++){
-        console.log(glp_get_col_name(lp, i).substr(1)  + " = " + glp_mip_col_val(lp, i));
         if(glp_mip_col_val(lp, i)) {
           pmuLocations.push(parseInt(glp_get_col_name(lp, i).substr(1)));
           nodes.update({id: parseInt(glp_get_col_name(lp, i).substr(1)), color: colors.pmu});
@@ -593,11 +594,10 @@ $(document).ready(function() {
     }
 
     var SORI = 0;
-    var ORC = 0;
 
     $.each( nodesArray, function( i, node ) {
       $.each( nodesArray[i], function( j, pmu ) {
-        ORC++;
+        
         if($.inArray(nodesArray[i][j], pmuLocations) !== -1) {
           console.log(nodesArray[i][j])
           SORI++;
@@ -607,8 +607,7 @@ $(document).ready(function() {
         SORI = SORI + 2;
       }
     });
-    ORC /= nodesArray.length;
-    console.log(ORC);
+
     $("#status").html("<b>SORI: </b>" + SORI);
     $("#status").show();
     $("#nodes").height(window.innerHeight-$("#controls").height()-50);
